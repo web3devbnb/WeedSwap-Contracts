@@ -13,5 +13,9 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
-# DEX
+# DEX_from_CODY
 https://github.com/StoboxTechnologies/stobox_dex/tree/main/projects/exchange-protocol/contracts
+
+# PancakeSwap
+https://pancakeswap.finance/
+https://github.com/pancakeswap/pancake-smart-contracts/tree/master/projects/exchange-protocol
