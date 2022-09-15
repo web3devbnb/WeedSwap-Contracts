@@ -1,8 +1,8 @@
-# Stobox Router #01
+# Astrocake Router #01
 
 ## Code
 
-`StoboxRouter01.sol`
+`AstrocakeRouter01.sol`
 
 # Read-Only Functions
 
@@ -24,15 +24,15 @@ Returns the [canonical WETH address](https://blog.0xproject.com/canonical-weth-a
 
 ## quote
 
-Calls function from StoboxLibrary.
+Calls function from AstrocakeLibrary.
 
 ## getAmountOut
 
-Calls function from StoboxLibrary.
+Calls function from AstrocakeLibrary.
 
 ## getAmountIn
 
-Calls function from StoboxLibrary.
+Calls function from AstrocakeLibrary.
 
 ## getAmountsOut
 
@@ -40,7 +40,7 @@ Calls function from StoboxLibrary.
 function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts);
 ```
 
-Calls function from StoboxLibrary.
+Calls function from AstrocakeLibrary.
 
 ## getAmountsIn
 
@@ -48,7 +48,7 @@ Calls function from StoboxLibrary.
 function getAmountsIn(uint amountOut, address[] memory path) public view returns (uint[] memory amounts);
 ```
 
-Calls function from StoboxLibrary.
+Calls function from AstrocakeLibrary.
 
 ## getTotalPairFee
 

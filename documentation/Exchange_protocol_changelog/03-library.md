@@ -1,6 +1,6 @@
-# Stobox Library
+# Astrocake Library
 
-We'll cover changes over `StoboxLibrary` contract.
+We'll cover changes over `AstrocakeLibrary` contract.
 
 ## Notation Keys
 
@@ -21,8 +21,8 @@ We'll cover changes over `StoboxLibrary` contract.
 +   uint256 reserveOut,
 +   uint256 totalFee
   ) internal pure returns (uint256 amountOut) {
-    require(amountIn > 0, "StoboxLibrary: INSUFFICIENT_INPUT_AMOUNT");
-    require(reserveIn > 0 && reserveOut > 0, "StoboxLibrary: INSUFFICIENT_LIQUIDITY");
+    require(amountIn > 0, "AstrocakeLibrary: INSUFFICIENT_INPUT_AMOUNT");
+    require(reserveIn > 0 && reserveOut > 0, "AstrocakeLibrary: INSUFFICIENT_LIQUIDITY");
 -   uint256 amountInWithFee = amountIn.mul(9975);
 +   uint256 amountInWithFee = amountIn.mul(10000 - totalFee);
     uint256 numerator = amountInWithFee.mul(reserveOut);
@@ -43,8 +43,8 @@ Updated to provide commission logic. The `amountInWithFee` is calculated accordi
 +   uint256 reserveOut,
 +   uint256 totalFee
   ) internal pure returns (uint256 amountIn) {
-    require(amountOut > 0, "StoboxLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
-    require(reserveIn > 0 && reserveOut > 0, "StoboxLibrary: INSUFFICIENT_LIQUIDITY");
+    require(amountOut > 0, "AstrocakeLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
+    require(reserveIn > 0 && reserveOut > 0, "AstrocakeLibrary: INSUFFICIENT_LIQUIDITY");
     uint256 numerator = reserveIn.mul(amountOut).mul(10000);
 -   uint256 denominator = reserveOut.sub(amountOut).mul(9975);
 +   uint256 denominator = reserveOut.sub(amountOut).mul(10000 - totalFee);
@@ -64,7 +64,7 @@ Updated to provide commission logic. The `denominator` is calculated according t
 +   address[] memory path,
 +   uint256 totalFee
   ) internal view returns (uint256[] memory amounts) {
-    require(path.length >= 2, "StoboxLibrary: INVALID_PATH");
+    require(path.length >= 2, "AstrocakeLibrary: INVALID_PATH");
     amounts = new uint256[](path.length);
     amounts[0] = amountIn;
     for (uint256 i; i < path.length - 1; i++) {
@@ -87,7 +87,7 @@ Updated to provide commission logic. `amounts` is calculated according to the to
 +   address[] memory path,
 +   uint256 totalFee
   ) internal view returns (uint256[] memory amounts) {
-    require(path.length >= 2, "StoboxLibrary: INVALID_PATH");
+    require(path.length >= 2, "AstrocakeLibrary: INVALID_PATH");
     amounts = new uint256[](path.length);
     amounts[amounts.length - 1] = amountOut;
     for (uint256 i = path.length - 1; i > 0; i--) {

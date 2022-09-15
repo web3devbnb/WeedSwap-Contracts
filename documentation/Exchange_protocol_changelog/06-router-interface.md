@@ -1,6 +1,6 @@
-# Stobox Router Interface
+# Astrocake Router Interface
 
-We'll cover changes over `IStoboxRouter01` contract.
+We'll cover changes over `IAstrocakeRouter01` contract.
 
 ## Notation Keys
 

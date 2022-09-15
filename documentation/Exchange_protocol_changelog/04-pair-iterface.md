@@ -1,6 +1,6 @@
-# Stobox Pair Interface
+# Astrocake Pair Interface
 
-We'll cover changes over `IStoboxPair` contract.
+We'll cover changes over `IAstrocakePair` contract.
 
 ## Notation Keys
 

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity =0.5.16;
 
-import "./interfaces/IStoboxERC20.sol";
+import "./interfaces/IAstrocakeERC20.sol";
 import "./libraries/SafeMath.sol";
 
-contract StoboxERC20 is IStoboxERC20 {
+contract AstrocakeERC20 is IAstrocakeERC20 {
     using SafeMath for uint256;
 
-    string public constant name = "Stobox LPs";
-    string public constant symbol = "STBU-LP";
+    string public constant name = "Astrocake LPs";
+    string public constant symbol = "ASTRO-LP";
     uint8 public constant decimals = 18;
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
@@ -100,7 +100,7 @@ contract StoboxERC20 is IStoboxERC20 {
         bytes32 r,
         bytes32 s
     ) external {
-        require(deadline >= block.timestamp, "Stobox: EXPIRED");
+        require(deadline >= block.timestamp, "Astrocake: EXPIRED");
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -109,7 +109,7 @@ contract StoboxERC20 is IStoboxERC20 {
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, "Stobox: INVALID_SIGNATURE");
+        require(recoveredAddress != address(0) && recoveredAddress == owner, "Astrocake: INVALID_SIGNATURE");
         _approve(owner, spender, value);
     }
 }

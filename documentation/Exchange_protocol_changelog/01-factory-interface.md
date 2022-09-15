@@ -1,6 +1,6 @@
-# Stobox Factory Interface
+# Astrocake Factory Interface
 
-We'll cover changes over `IStoboxFactory` contract.
+We'll cover changes over `IAstrocakeFactory` contract.
 
 ## Notation Keys
 

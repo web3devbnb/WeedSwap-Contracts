@@ -1,8 +1,8 @@
-# Stobox Library
+# Astrocake Library
 
 ## Code
 
-`StoboxLibrary.sol`
+`AstrocakeLibrary.sol`
 
 # Internal Functions
 

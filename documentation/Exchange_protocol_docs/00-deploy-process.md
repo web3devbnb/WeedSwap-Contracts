@@ -4,9 +4,9 @@ We'll cover the deployment process of exchange-protocol in this chapter.
 The exchange-protocol consists of four contracts, which are:
 
 - WBNB to manage transactions, which include ETH;
-- StoboxFactory to manage all pairs.
-- StoboxRouter01, which provides main logic of the protocol.
-- StoboxRouter, which provides main logic of the protocol and is main contract.
+- AstrocakeFactory to manage all pairs.
+- AstrocakeRouter01, which provides main logic of the protocol.
+- AstrocakeRouter, which provides main logic of the protocol and is main contract.
 
 ## Deploy **WBNB** (WETH)
 
@@ -26,12 +26,12 @@ The exchange-protocol consists of four contracts, which are:
   - Select `WBNB`;
   - Deploy;
 
-## Deploy **StoboxFactory**
+## Deploy **AstrocakeFactory**
 
 | Parameter        | Value                                           |
 | ---------------- | ----------------------------------------------- |
-| File name        | StoboxFactory.sol                               |
-| Path             | ./exchange-protocol/contracts/StoboxFactory.sol |
+| File name        | AstrocakeFactory.sol                               |
+| Path             | ./exchange-protocol/contracts/AstrocakeFactory.sol |
 | Compiler version | v0.5.16+commit.9c3226ce                         |
 
 ### Constructor parameters
@@ -46,16 +46,16 @@ The exchange-protocol consists of four contracts, which are:
 - Compiler tab:
   - Select compiler: `v0.5.16+commit.9c3226ce`;
 - Deploy tab:
-  - Select `StoboxFactory`;
+  - Select `AstrocakeFactory`;
   - Provide `admins` addresses and `feeToSetter` address as constructor params;
   - Deploy;
 
-## Deploy **StoboxRouter01**
+## Deploy **AstrocakeRouter01**
 
 | Parameter        | Value                                            |
 | ---------------- | ------------------------------------------------ |
-| File name        | StoboxRouter01.sol                               |
-| Path             | ./exchange-protocol/contracts/StoboxRouter01.sol |
+| File name        | AstrocakeRouter01.sol                               |
+| Path             | ./exchange-protocol/contracts/AstrocakeRouter01.sol |
 | Compiler version | v0.6.6+commit.6c089d02                           |
 
 ### Constructor parameters
@@ -67,28 +67,28 @@ The exchange-protocol consists of four contracts, which are:
 
 ### Follow next steps
 
-- Expand StoboxFactory deployed above:
+- Expand AstrocakeFactory deployed above:
   - Read `INIT_CODE_PAIR_HASH`;
   - Copy this hash without prefix `'0x'`;
     > Example: bb600ba95884f2c2837114fd2f157d00137e0b65b0fe5226523d720e4a4ce539
-- Edit StoboxLibrary:
-  - Find StoboxLibrary and then go to `pairFor` function;
+- Edit AstrocakeLibrary:
+  - Find AstrocakeLibrary and then go to `pairFor` function;
   - Replace new hex by `INIT_CODE_PAIR_HASH` above;
     > Example: hex'd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66' hex'bb600ba95884f2c2837114fd2f157d00137e0b65b0fe5226523d720e4a4ce539'
 - Compiler tab:
   - Select compiler: `v0.6.6+commit.6c089d02`;
   - Check on `Enable optimization: 200` to avoid contract code size limit issue;
 - Deploy tab:
-  - Select `StoboxRouter01`;
-  - Fill `StoboxFactory` address and `WBNB` address as constructor params;
+  - Select `AstrocakeRouter01`;
+  - Fill `AstrocakeFactory` address and `WBNB` address as constructor params;
   - Deploy;
 
-## Deploy **StoboxRouter** (Main router)
+## Deploy **AstrocakeRouter** (Main router)
 
 | Parameter        | Value                                          |
 | ---------------- | ---------------------------------------------- |
-| File name        | StoboxRouter.sol                               |
-| Path             | ./exchange-protocol/contracts/StoboxRouter.sol |
+| File name        | AstrocakeRouter.sol                               |
+| Path             | ./exchange-protocol/contracts/AstrocakeRouter.sol |
 | Compiler version | v0.6.6+commit.6c089d02                         |
 
 ### Constructor parameters
@@ -100,20 +100,20 @@ The exchange-protocol consists of four contracts, which are:
 
 ### Follow next steps
 
-> NOTE: You don't have to do steps 1-2 if you did it earlier while deploying `StoboxRouter01`.
+> NOTE: You don't have to do steps 1-2 if you did it earlier while deploying `AstrocakeRouter01`.
 
-- Expand StoboxFactory deployed above:
+- Expand AstrocakeFactory deployed above:
   - Read `INIT_CODE_PAIR_HASH`;
   - Copy this hash without prefix `'0x'`;
     > Example: bb600ba95884f2c2837114fd2f157d00137e0b65b0fe5226523d720e4a4ce539
-- Edit StoboxLibrary:
-  - Find StoboxLibrary and then go to `pairFor` function;
+- Edit AstrocakeLibrary:
+  - Find AstrocakeLibrary and then go to `pairFor` function;
   - Replace new hex by `INIT_CODE_PAIR_HASH` above;
     > Example: hex'd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66' hex'bb600ba95884f2c2837114fd2f157d00137e0b65b0fe5226523d720e4a4ce539'
 - Compiler tab:
   - Select compiler: `v0.6.6+commit.6c089d02`;
   - Check on `Enable optimization: 200` to avoid contract code size limit issue;
 - Deploy tab:
-  - Select `StoboxRouter`;
-  - Fill `StoboxFactory` address and `WBNB` address as constructor params;
+  - Select `AstrocakeRouter`;
+  - Fill `AstrocakeFactory` address and `WBNB` address as constructor params;
   - Deploy;

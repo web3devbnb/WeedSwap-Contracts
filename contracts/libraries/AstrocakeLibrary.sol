@@ -2,17 +2,17 @@
 pragma solidity >=0.5.0;
 
 import "./SafeMath.sol";
-import "../interfaces/IStoboxFactory.sol";
-import "../interfaces/IStoboxPair.sol";
+import "../interfaces/IAstrocakeFactory.sol";
+import "../interfaces/IAstrocakePair.sol";
 
-library StoboxLibrary {
+library AstrocakeLibrary {
     using SafeMath for uint256;
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "StoboxLibrary: IDENTICAL_ADDRESSES");
+        require(tokenA != tokenB, "AstrocakeLibrary: IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), "StoboxLibrary: ZERO_ADDRESS");
+        require(token0 != address(0), "AstrocakeLibrary: ZERO_ADDRESS");
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
@@ -44,7 +44,7 @@ library StoboxLibrary {
     ) internal view returns (uint256 reserveA, uint256 reserveB) {
         (address token0, ) = sortTokens(tokenA, tokenB);
         pairFor(factory, tokenA, tokenB);
-        (uint256 reserve0, uint256 reserve1, ) = IStoboxPair(pairFor(factory, tokenA, tokenB)).getReserves();
+        (uint256 reserve0, uint256 reserve1, ) = IAstrocakePair(pairFor(factory, tokenA, tokenB)).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
@@ -54,8 +54,8 @@ library StoboxLibrary {
         uint256 reserveA,
         uint256 reserveB
     ) internal pure returns (uint256 amountB) {
-        require(amountA > 0, "StoboxLibrary: INSUFFICIENT_AMOUNT");
-        require(reserveA > 0 && reserveB > 0, "StoboxLibrary: INSUFFICIENT_LIQUIDITY");
+        require(amountA > 0, "AstrocakeLibrary: INSUFFICIENT_AMOUNT");
+        require(reserveA > 0 && reserveB > 0, "AstrocakeLibrary: INSUFFICIENT_LIQUIDITY");
         amountB = amountA.mul(reserveB) / reserveA;
     }
 
@@ -66,8 +66,8 @@ library StoboxLibrary {
         uint256 reserveOut,
         uint256 totalFee
     ) internal pure returns (uint256 amountOut) {
-        require(amountIn > 0, "StoboxLibrary: INSUFFICIENT_INPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "StoboxLibrary: INSUFFICIENT_LIQUIDITY");
+        require(amountIn > 0, "AstrocakeLibrary: INSUFFICIENT_INPUT_AMOUNT");
+        require(reserveIn > 0 && reserveOut > 0, "AstrocakeLibrary: INSUFFICIENT_LIQUIDITY");
         uint256 amountInWithFee = amountIn.mul(10000 - totalFee);
         uint256 numerator = amountInWithFee.mul(reserveOut);
         uint256 denominator = reserveIn.mul(10000).add(amountInWithFee);
@@ -81,8 +81,8 @@ library StoboxLibrary {
         uint256 reserveOut,
         uint256 totalFee
     ) internal pure returns (uint256 amountIn) {
-        require(amountOut > 0, "StoboxLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "StoboxLibrary: INSUFFICIENT_LIQUIDITY");
+        require(amountOut > 0, "AstrocakeLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(reserveIn > 0 && reserveOut > 0, "AstrocakeLibrary: INSUFFICIENT_LIQUIDITY");
         uint256 numerator = reserveIn.mul(amountOut).mul(10000);
         uint256 denominator = reserveOut.sub(amountOut).mul(10000 - totalFee);
         amountIn = (numerator / denominator).add(1);
@@ -95,7 +95,7 @@ library StoboxLibrary {
         address[] memory path,
         uint256 totalFee
     ) internal view returns (uint256[] memory amounts) {
-        require(path.length >= 2, "StoboxLibrary: INVALID_PATH");
+        require(path.length >= 2, "AstrocakeLibrary: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
         for (uint256 i; i < path.length - 1; i++) {
@@ -111,7 +111,7 @@ library StoboxLibrary {
         address[] memory path,
         uint256 totalFee
     ) internal view returns (uint256[] memory amounts) {
-        require(path.length >= 2, "StoboxLibrary: INVALID_PATH");
+        require(path.length >= 2, "AstrocakeLibrary: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint256 i = path.length - 1; i > 0; i--) {

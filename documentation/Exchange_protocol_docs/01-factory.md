@@ -1,8 +1,8 @@
-# Stobox Factory
+# Astrocake Factory
 
 ## Code
 
-`StoboxFactory.sol`
+`AstrocakeFactory.sol`
 
 # Events
 

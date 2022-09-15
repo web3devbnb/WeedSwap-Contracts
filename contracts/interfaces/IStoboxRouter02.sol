@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.6.2;
 
-import "./IStoboxRouter01.sol";
+import "./IAstrocakeRouter01.sol";
 
-interface IStoboxRouter02 is IStoboxRouter01 {
+interface IAstrocakeRouter02 is IAstrocakeRouter01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint256 liquidity,

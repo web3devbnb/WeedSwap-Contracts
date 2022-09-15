@@ -1,6 +1,6 @@
-# Stobox Pair
+# Astrocake Pair
 
-We'll cover changes over `StoboxPair` contract.
+We'll cover changes over `AstrocakePair` contract.
 
 ## Notation Keys
 
@@ -53,7 +53,7 @@ Added for convenient value retrieval by router for further commission calculatio
 ```diff
 - function initialize(address _token0, address _token1) external {
 + function initialize(address _token0, address _token1, uint _liquidityFee, bool _isNoFee) external {
-    require(msg.sender == factory, 'Stobox: FORBIDDEN'); // sufficient check
+    require(msg.sender == factory, 'Astrocake: FORBIDDEN'); // sufficient check
     token0 = _token0;
     token1 = _token1;
 +   liquidityFee = _liquidityFee;
@@ -70,7 +70,7 @@ While creating a new pair `_liquidityFee` is the liquidity commission and `_isNo
 
 ```diff
   function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
-    address feeTo = IStoboxFactory(factory).feeTo();
+    address feeTo = IAstrocakeFactory(factory).feeTo();
 -   feeOn = feeTo != address(0);
 +   feeOn = feeTo != address(0) && !isNoFee;
     uint _kLast = kLast; // gas savings
@@ -100,7 +100,7 @@ Updated to calculate commission (treasury + burn) and send it to feeTo.
 ```diff
 ⏩
   uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
-  require(amount0In > 0 || amount1In > 0, 'Stobox: INSUFFICIENT_INPUT_AMOUNT');
+  require(amount0In > 0 || amount1In > 0, 'Astrocake: INSUFFICIENT_INPUT_AMOUNT');
   { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
 - uint balance0Adjusted = (balance0.mul(10000).sub(amount0In.mul(25)));
 - uint balance1Adjusted = (balance1.mul(10000).sub(amount1In.mul(25)));
@@ -114,7 +114,7 @@ Updated to calculate commission (treasury + burn) and send it to feeTo.
 +   balance0Adjusted = (balance0.mul(10000).sub(amount0In.mul(totalFee)));
 +   balance1Adjusted = (balance1.mul(10000).sub(amount1In.mul(totalFee)));
 + }
-  require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(10000**2), 'Stobox: K');
+  require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(10000**2), 'Astrocake: K');
   }
 ⏩
 ```

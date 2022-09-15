@@ -1,8 +1,8 @@
-# Stobox Pair
+# Astrocake Pair
 
 ## Code
 
-`StoboxPair.sol`
+`AstrocakePair.sol`
 
 # Events
 
