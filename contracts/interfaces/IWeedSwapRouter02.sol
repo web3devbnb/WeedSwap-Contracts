@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.6.2;
 
-import "./IAstrocakeRouter01.sol";
+import "./IWeedSwapRouter01.sol";
 
-interface IAstrocakeRouter02 is IAstrocakeRouter01 {
+interface IWeedSwapRouter02 is IWeedSwapRouter01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint256 liquidity,

@@ -1,8 +1,8 @@
-# Astrocake Library
+# WeedSwap Library
 
 ## Code
 
-`AstrocakeLibrary.sol`
+`WeedSwapLibrary.sol`
 
 # Internal Functions
 

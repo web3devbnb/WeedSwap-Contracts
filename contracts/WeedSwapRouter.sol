@@ -3,14 +3,14 @@ pragma solidity =0.6.6;
 
 import '@uniswap/lib/contracts/libraries/TransferHelper.sol';
 
-import "./interfaces/IAstrocakeRouter02.sol";
-import "./interfaces/IAstrocakeFactory.sol";
-import "./libraries/AstrocakeLibrary.sol";
+import "./interfaces/IWeedSwapRouter02.sol";
+import "./interfaces/IWeedSwapFactory.sol";
+import "./libraries/WeedSwapLibrary.sol";
 import "./libraries/SafeMath.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/IWETH.sol";
 
-contract AstrocakeRouter is IAstrocakeRouter02 {
+contract WeedSwapRouter is IWeedSwapRouter02 {
     using SafeMath for uint256;
 
     address public immutable override factory;
@@ -19,14 +19,14 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
     uint public defaultLiquidityFee;
 
     modifier ensure(uint256 deadline) {
-        require(deadline >= block.timestamp, "AstrocakeRouter: EXPIRED");
+        require(deadline >= block.timestamp, "WeedSwapRouter: EXPIRED");
         _;
     }
 
     constructor(address _factory, address _WETH) public {
         factory = _factory;
         WETH = _WETH;
-        defaultLiquidityFee = IAstrocakeFactory(_factory).defaultLiquidityFee();
+        defaultLiquidityFee = IWeedSwapFactory(_factory).defaultLiquidityFee();
     }
 
     receive() external payable {
@@ -56,21 +56,21 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 liquidityFee
     ) internal virtual returns (uint256 amountA, uint256 amountB) {
         // create the pair if it doesn't exist yet
-        if (IAstrocakeFactory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IAstrocakeFactory(factory).createPair(tokenA, tokenB, msg.sender, liquidityFee);
+        if (IWeedSwapFactory(factory).getPair(tokenA, tokenB) == address(0)) {
+            IWeedSwapFactory(factory).createPair(tokenA, tokenB, msg.sender, liquidityFee);
         }
-        (uint256 reserveA, uint256 reserveB) = AstrocakeLibrary.getReserves(factory, tokenA, tokenB);
+        (uint256 reserveA, uint256 reserveB) = WeedSwapLibrary.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
-            uint256 amountBOptimal = AstrocakeLibrary.quote(amountADesired, reserveA, reserveB);
+            uint256 amountBOptimal = WeedSwapLibrary.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, "AstrocakeRouter: INSUFFICIENT_B_AMOUNT");
+                require(amountBOptimal >= amountBMin, "WeedSwapRouter: INSUFFICIENT_B_AMOUNT");
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
-                uint256 amountAOptimal = AstrocakeLibrary.quote(amountBDesired, reserveB, reserveA);
+                uint256 amountAOptimal = WeedSwapLibrary.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, "AstrocakeRouter: INSUFFICIENT_A_AMOUNT");
+                require(amountAOptimal >= amountAMin, "WeedSwapRouter: INSUFFICIENT_A_AMOUNT");
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -97,10 +97,10 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         )
     {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-        address pair = AstrocakeLibrary.pairFor(factory, tokenA, tokenB);
+        address pair = WeedSwapLibrary.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IAstrocakePair(pair).mint(to);
+        liquidity = IWeedSwapPair(pair).mint(to);
     }
 
     // addLiquidityWithFee supports liqudity fee on creating brand new pairs
@@ -125,12 +125,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
             uint256 liquidity
         )
     {
-        require(liquidityFee >= 0 && liquidityFee < 92, "AstrocakeRouter: INVALID_FEE_AMOUNT");
+        require(liquidityFee >= 0 && liquidityFee < 92, "WeedSwapRouter: INVALID_FEE_AMOUNT");
         (amountA, amountB) = _addLiquidityWithFee(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, liquidityFee);
-        address pair = AstrocakeLibrary.pairFor(factory, tokenA, tokenB);
+        address pair = WeedSwapLibrary.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IAstrocakePair(pair).mint(to);
+        liquidity = IWeedSwapPair(pair).mint(to);
     }
 
     function addLiquidityETH(
@@ -160,11 +160,11 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
             amountTokenMin,
             amountETHMin
         );
-        address pair = AstrocakeLibrary.pairFor(factory, token, WETH);
+        address pair = WeedSwapLibrary.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
-        liquidity = IAstrocakePair(pair).mint(to);
+        liquidity = IWeedSwapPair(pair).mint(to);
         // refund dust eth, if any
         if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH);
     }
@@ -190,7 +190,7 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
             uint256 liquidity
         )
     {
-        require(liquidityFee >= 0 && liquidityFee < 92, "AstrocakeRouter: INVALID_FEE_AMOUNT");
+        require(liquidityFee >= 0 && liquidityFee < 92, "WeedSwapRouter: INVALID_FEE_AMOUNT");
         (amountToken, amountETH) = _addLiquidityWithFee(
             token,
             WETH,
@@ -200,11 +200,11 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
             amountETHMin,
             liquidityFee
         );
-        address pair = AstrocakeLibrary.pairFor(factory, token, WETH);
+        address pair = WeedSwapLibrary.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
-        liquidity = IAstrocakePair(pair).mint(to);
+        liquidity = IWeedSwapPair(pair).mint(to);
         // refund dust eth, if any
         if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH);
     }
@@ -219,13 +219,13 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) public virtual override ensure(deadline) returns (uint256 amountA, uint256 amountB) {
-        address pair = AstrocakeLibrary.pairFor(factory, tokenA, tokenB);
-        IAstrocakePair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-        (uint256 amount0, uint256 amount1) = IAstrocakePair(pair).burn(to);
-        (address token0, ) = AstrocakeLibrary.sortTokens(tokenA, tokenB);
+        address pair = WeedSwapLibrary.pairFor(factory, tokenA, tokenB);
+        IWeedSwapPair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        (uint256 amount0, uint256 amount1) = IWeedSwapPair(pair).burn(to);
+        (address token0, ) = WeedSwapLibrary.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, "AstrocakeRouter: INSUFFICIENT_A_AMOUNT");
-        require(amountB >= amountBMin, "AstrocakeRouter: INSUFFICIENT_B_AMOUNT");
+        require(amountA >= amountAMin, "WeedSwapRouter: INSUFFICIENT_A_AMOUNT");
+        require(amountB >= amountBMin, "WeedSwapRouter: INSUFFICIENT_B_AMOUNT");
     }
 
     function removeLiquidityETH(
@@ -263,9 +263,9 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         bytes32 r,
         bytes32 s
     ) external virtual override returns (uint256 amountA, uint256 amountB) {
-        address pair = AstrocakeLibrary.pairFor(factory, tokenA, tokenB);
+        address pair = WeedSwapLibrary.pairFor(factory, tokenA, tokenB);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IAstrocakePair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IWeedSwapPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
 
@@ -281,9 +281,9 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         bytes32 r,
         bytes32 s
     ) external virtual override returns (uint256 amountToken, uint256 amountETH) {
-        address pair = AstrocakeLibrary.pairFor(factory, token, WETH);
+        address pair = WeedSwapLibrary.pairFor(factory, token, WETH);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IAstrocakePair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IWeedSwapPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
 
@@ -314,9 +314,9 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         bytes32 r,
         bytes32 s
     ) external virtual override returns (uint256 amountETH) {
-        address pair = AstrocakeLibrary.pairFor(factory, token, WETH);
+        address pair = WeedSwapLibrary.pairFor(factory, token, WETH);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IAstrocakePair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        IWeedSwapPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(
             token,
             liquidity,
@@ -336,12 +336,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
     ) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = AstrocakeLibrary.sortTokens(input, output);
+            (address token0, ) = WeedSwapLibrary.sortTokens(input, output);
             uint256 amountOut = amounts[i + 1];
             (uint256 amount0Out, uint256 amount1Out) =
                 input == token0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
-            address to = i < path.length - 2 ? AstrocakeLibrary.pairFor(factory, output, path[i + 2]) : _to;
-            IAstrocakePair(AstrocakeLibrary.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            address to = i < path.length - 2 ? WeedSwapLibrary.pairFor(factory, output, path[i + 2]) : _to;
+            IWeedSwapPair(WeedSwapLibrary.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
 
@@ -353,12 +353,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 deadline
     ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
-        require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
+        require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, to);
@@ -372,12 +372,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 deadline
     ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-        require(amounts[0] <= amountInMax, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+        require(amounts[0] <= amountInMax, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, to);
@@ -389,12 +389,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external payable virtual override ensure(deadline) returns (uint256[] memory amounts) {
-        require(path[0] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[0] == WETH, "WeedSwapRouter: INVALID_PATH");
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsOut(factory, msg.value, path, totalFee);
-        require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsOut(factory, msg.value, path, totalFee);
+        require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         IWETH(WETH).deposit{value: amounts[0]}();
-        assert(IWETH(WETH).transfer(AstrocakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
+        assert(IWETH(WETH).transfer(WeedSwapLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
 
@@ -405,14 +405,14 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
-        require(path[path.length - 1] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[path.length - 1] == WETH, "WeedSwapRouter: INVALID_PATH");
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-        require(amounts[0] <= amountInMax, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+        require(amounts[0] <= amountInMax, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, address(this));
@@ -427,14 +427,14 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
-        require(path[path.length - 1] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[path.length - 1] == WETH, "WeedSwapRouter: INVALID_PATH");
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
-        require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
+        require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, address(this));
@@ -448,12 +448,12 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external payable virtual override ensure(deadline) returns (uint256[] memory amounts) {
-        require(path[0] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[0] == WETH, "WeedSwapRouter: INVALID_PATH");
         uint256 totalFee = getTotalFee(path);
-        amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-        require(amounts[0] <= msg.value, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
+        amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+        require(amounts[0] <= msg.value, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
         IWETH(WETH).deposit{value: amounts[0]}();
-        assert(IWETH(WETH).transfer(AstrocakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
+        assert(IWETH(WETH).transfer(WeedSwapLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
         // refund dust eth, if any
         if (msg.value > amounts[0]) TransferHelper.safeTransferETH(msg.sender, msg.value - amounts[0]);
@@ -464,8 +464,8 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
     function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = AstrocakeLibrary.sortTokens(input, output);
-            IAstrocakePair pair = IAstrocakePair(AstrocakeLibrary.pairFor(factory, input, output));
+            (address token0, ) = WeedSwapLibrary.sortTokens(input, output);
+            IWeedSwapPair pair = IWeedSwapPair(WeedSwapLibrary.pairFor(factory, input, output));
             uint256 amountInput;
             uint256 amountOutput;
             {
@@ -475,11 +475,11 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
                     input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
                 amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
                 uint256 totalFee = getTotalFee(path);
-                amountOutput = AstrocakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput, totalFee);
+                amountOutput = WeedSwapLibrary.getAmountOut(amountInput, reserveInput, reserveOutput, totalFee);
             }
             (uint256 amount0Out, uint256 amount1Out) =
                 input == token0 ? (uint256(0), amountOutput) : (amountOutput, uint256(0));
-            address to = i < path.length - 2 ? AstrocakeLibrary.pairFor(factory, output, path[i + 2]) : _to;
+            address to = i < path.length - 2 ? WeedSwapLibrary.pairFor(factory, output, path[i + 2]) : _to;
             pair.swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
@@ -494,14 +494,14 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amountIn
         );
         uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
     }
 
@@ -511,15 +511,15 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external payable virtual override ensure(deadline) {
-        require(path[0] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[0] == WETH, "WeedSwapRouter: INVALID_PATH");
         uint256 amountIn = msg.value;
         IWETH(WETH).deposit{value: amountIn}();
-        assert(IWETH(WETH).transfer(AstrocakeLibrary.pairFor(factory, path[0], path[1]), amountIn));
+        assert(IWETH(WETH).transfer(WeedSwapLibrary.pairFor(factory, path[0], path[1]), amountIn));
         uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
     }
 
@@ -530,16 +530,16 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         address to,
         uint256 deadline
     ) external virtual override ensure(deadline) {
-        require(path[path.length - 1] == WETH, "AstrocakeRouter: INVALID_PATH");
+        require(path[path.length - 1] == WETH, "WeedSwapRouter: INVALID_PATH");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            AstrocakeLibrary.pairFor(factory, path[0], path[1]),
+            WeedSwapLibrary.pairFor(factory, path[0], path[1]),
             amountIn
         );
         _swapSupportingFeeOnTransferTokens(path, address(this));
         uint256 amountOut = IERC20(WETH).balanceOf(address(this));
-        require(amountOut >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(amountOut >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         IWETH(WETH).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut);
     }
@@ -550,7 +550,7 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 reserveA,
         uint256 reserveB
     ) public pure virtual override returns (uint256 amountB) {
-        return AstrocakeLibrary.quote(amountA, reserveA, reserveB);
+        return WeedSwapLibrary.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(
@@ -559,7 +559,7 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 reserveOut,
         uint256 totalFee
     ) public pure virtual override returns (uint256 amountOut) {
-        return AstrocakeLibrary.getAmountOut(amountIn, reserveIn, reserveOut, totalFee);
+        return WeedSwapLibrary.getAmountOut(amountIn, reserveIn, reserveOut, totalFee);
     }
 
     function getAmountIn(
@@ -568,7 +568,7 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         uint256 reserveOut,
         uint256 totalFee
     ) public pure virtual override returns (uint256 amountIn) {
-        return AstrocakeLibrary.getAmountIn(amountOut, reserveIn, reserveOut, totalFee);
+        return WeedSwapLibrary.getAmountIn(amountOut, reserveIn, reserveOut, totalFee);
     }
 
     function getAmountsOut(uint256 amountIn, address[] memory path)
@@ -579,7 +579,7 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         returns (uint256[] memory amounts)
     {
         uint256 totalFee = getTotalFee(path);
-        return AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
+        return WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
     }
 
     function getAmountsIn(uint256 amountOut, address[] memory path)
@@ -590,11 +590,11 @@ contract AstrocakeRouter is IAstrocakeRouter02 {
         returns (uint256[] memory amounts)
     {
         uint256 totalFee = getTotalFee(path);
-        return AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+        return WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
     }
 
     // **** GET TOTAL FEE ****
     function getTotalFee(address[] memory path) internal view returns(uint256) {
-        return IAstrocakePair(AstrocakeLibrary.pairFor(factory, path[0], path[1])).getTotalFee();
+        return IWeedSwapPair(WeedSwapLibrary.pairFor(factory, path[0], path[1])).getTotalFee();
     }
 }

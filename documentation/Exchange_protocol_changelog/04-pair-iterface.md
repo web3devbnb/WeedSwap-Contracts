@@ -1,6 +1,6 @@
-# Astrocake Pair Interface
+# WeedSwap Pair Interface
 
-We'll cover changes over `IAstrocakePair` contract.
+We'll cover changes over `IWeedSwapPair` contract.
 
 ## Notation Keys
 

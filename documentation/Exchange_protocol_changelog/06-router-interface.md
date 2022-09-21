@@ -1,6 +1,6 @@
-# Astrocake Router Interface
+# WeedSwap Router Interface
 
-We'll cover changes over `IAstrocakeRouter01` contract.
+We'll cover changes over `IWeedSwapRouter01` contract.
 
 ## Notation Keys
 

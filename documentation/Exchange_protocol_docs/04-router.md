@@ -1,8 +1,8 @@
-# Astrocake Router
+# WeedSwap Router
 
 ## Code
 
-`AstrocakeRouter.sol`
+`WeedSwapRouter.sol`
 
 # Read-Only Functions
 
@@ -24,15 +24,15 @@ Returns the [canonical WETH address](https://blog.0xproject.com/canonical-weth-a
 
 ## quote
 
-Calls function from AstrocakeLibrary.
+Calls function from WeedSwapLibrary.
 
 ## getAmountOut
 
-Calls function from AstrocakeLibrary.
+Calls function from WeedSwapLibrary.
 
 ## getAmountIn
 
-Calls function from AstrocakeLibrary.
+Calls function from WeedSwapLibrary.
 
 ## getAmountsOut
 
@@ -40,7 +40,7 @@ Calls function from AstrocakeLibrary.
 function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts);
 ```
 
-Calls function from AstrocakeLibrary.
+Calls function from WeedSwapLibrary.
 
 ## getAmountsIn
 
@@ -48,7 +48,7 @@ Calls function from AstrocakeLibrary.
 function getAmountsIn(uint amountOut, address[] memory path) public view returns (uint[] memory amounts);
 ```
 
-Calls function from AstrocakeLibrary.
+Calls function from WeedSwapLibrary.
 
 ## getTotalPairFee
 

@@ -1,6 +1,6 @@
-# Astrocake Factory
+# WeedSwap Factory
 
-We'll cover changes over `AstrocakeFactory` contract.
+We'll cover changes over `WeedSwapFactory` contract.
 
 ## Notation Keys
 
@@ -42,7 +42,7 @@ Added for handy getting default commission of the service. Router accesses and r
 
 ```diff
 + modifier OnlyAdmin() {
-+   require(isAdmin(msg.sender), "Astrocake: FORBIDDEN");
++   require(isAdmin(msg.sender), "WeedSwap: FORBIDDEN");
 +   _;
 + }
 ```
@@ -56,7 +56,7 @@ Added for admins and security token owners' logic. This modifier restricts those
 ```diff
 - constructor(address _feeToSetter) public {
 + constructor(address _feeToSetter, address[] memory _admins) public {
-+   require(_admins.length >= 1, "Astrocake: NO_ADMINS_WERE_ADDED");
++   require(_admins.length >= 1, "WeedSwap: NO_ADMINS_WERE_ADDED");
 +   feeToSetter = _feeToSetter;
 +   admins = _admins;
 + }
@@ -69,14 +69,14 @@ Added for admins and security token owners' logic. This modifier restricts those
 ```diff
 - function createPair(address tokenA, address tokenB) external returns (address pair) {
 + function createPair(address tokenA, address tokenB, address sender, uint _liquidityFee) external returns (address pair) {
-  require(tokenA != tokenB, 'Astrocake: IDENTICAL_ADDRESSES');
+  require(tokenA != tokenB, 'WeedSwap: IDENTICAL_ADDRESSES');
   (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-  require(token0 != address(0), 'Astrocake: ZERO_ADDRESS');
+  require(token0 != address(0), 'WeedSwap: ZERO_ADDRESS');
 ⏩
   assembly {
     pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
   }
-- IAstrocakePair(pair).initialize(token0, token1);
+- IWeedSwapPair(pair).initialize(token0, token1);
 + uint liquidityFee = defaultLiquidityFee;
 + bool isNoFee = false;
 + if (isAdmin(sender)) {
@@ -85,7 +85,7 @@ Added for admins and security token owners' logic. This modifier restricts those
 +   liquidityFee = 0;
 +   isNoFee = true;
 + }
-  IAstrocakePair(pair).initialize(token0, token1, liquidityFee, isNoFee);
+  IWeedSwapPair(pair).initialize(token0, token1, liquidityFee, isNoFee);
   getPair[token0][token1] = pair;
   getPair[token1][token0] = pair; // populate mapping in the reverse direction
   allPairs.push(pair);
@@ -99,7 +99,7 @@ Updated to provide commission logic. `sender` is `msg.sender` of the router cont
 
 ```diff
 + function addAdmin(address _newAdmin) OnlyAdmin external {
-+   require(!isAdmin(_newAdmin), "Astrocake: ADMIN_ALREADY_EXIST");
++   require(!isAdmin(_newAdmin), "WeedSwap: ADMIN_ALREADY_EXIST");
 +   admins.push(_newAdmin);
 + }
 ```
@@ -110,9 +110,9 @@ Function was added to provide admin logic. It adds a new admin to the list.
 
 ```diff
 + function removeAdmin(address _adminAddress) OnlyAdmin external returns(bool) {
-+   require(isAdmin(_adminAddress), "Astrocake: INVALID_ADMIN_ADDRESS");
-+   require(msg.sender != _adminAddress, "Astrocake: YOU_CANNOT_REMOVE_YOURSELF");
-+   require(admins.length > 1, "Astrocake: YOU_CANNOT_REMOVE_THE_LAST_ADMIN");
++   require(isAdmin(_adminAddress), "WeedSwap: INVALID_ADMIN_ADDRESS");
++   require(msg.sender != _adminAddress, "WeedSwap: YOU_CANNOT_REMOVE_YOURSELF");
++   require(admins.length > 1, "WeedSwap: YOU_CANNOT_REMOVE_THE_LAST_ADMIN");
 +   for (uint i = 0; i < admins.length; i++) {
 +     if (admins[i] == _adminAddress) {
 +       if (admins.length != (i - 1)) {
@@ -145,8 +145,8 @@ Function was added to provide admin logic. It checks whether the address is on t
 
 ```diff
 + function addSecurityTokenOwner(address _newOwner) OnlyAdmin external {
-+   require(!isAdmin(_newOwner), "Astrocake: ADDRESS_REGISTRED_AS_ADMIN");
-+   require(!isSecurityTokenOwner(_newOwner), "Astrocake: SECURITY_TOKEN_OWNER_ALREADY_EXIST");
++   require(!isAdmin(_newOwner), "WeedSwap: ADDRESS_REGISTRED_AS_ADMIN");
++   require(!isSecurityTokenOwner(_newOwner), "WeedSwap: SECURITY_TOKEN_OWNER_ALREADY_EXIST");
 +   securityTokenOwner[_newOwner] = true;
 + }
 ```
@@ -157,7 +157,7 @@ Function was added to provide security token owners' logic. It adds a new securi
 
 ```diff
 + function removeSecurityTokenOwner(address _ownerAddress) OnlyAdmin external {
-+   require(isSecurityTokenOwner(_ownerAddress), "Astrocake: INVALID_SECURITY_TOKEN_OWNER_ADDRESS");
++   require(isSecurityTokenOwner(_ownerAddress), "WeedSwap: INVALID_SECURITY_TOKEN_OWNER_ADDRESS");
 +   delete securityTokenOwner[_ownerAddress];
 + }
 ```

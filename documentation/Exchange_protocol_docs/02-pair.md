@@ -1,8 +1,8 @@
-# Astrocake Pair
+# WeedSwap Pair
 
 ## Code
 
-`AstrocakePair.sol`
+`WeedSwapPair.sol`
 
 # Events
 

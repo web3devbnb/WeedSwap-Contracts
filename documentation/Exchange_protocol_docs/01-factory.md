@@ -1,8 +1,8 @@
-# Astrocake Factory
+# WeedSwap Factory
 
 ## Code
 
-`AstrocakeFactory.sol`
+`WeedSwapFactory.sol`
 
 # Events
 

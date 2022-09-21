@@ -1,6 +1,6 @@
-# Astrocake Factory Interface
+# WeedSwap Factory Interface
 
-We'll cover changes over `IAstrocakeFactory` contract.
+We'll cover changes over `IWeedSwapFactory` contract.
 
 ## Notation Keys
 

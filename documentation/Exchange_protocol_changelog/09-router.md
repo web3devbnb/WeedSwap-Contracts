@@ -1,6 +1,6 @@
-# Astrocake Router
+# WeedSwap Router
 
-We'll cover changes over `AstrocakeRouter` contract.
+We'll cover changes over `WeedSwapRouter` contract.
 
 ## Notation Keys
 
@@ -28,7 +28,7 @@ We'll cover changes over `AstrocakeRouter` contract.
 constructor(address _factory, address _WETH) public {
   factory = _factory;
   WETH = _WETH;
-+ defaultLiquidityFee = IAstrocakeFactory(_factory).defaultLiquidityFee();
++ defaultLiquidityFee = IWeedSwapFactory(_factory).defaultLiquidityFee();
 }
 ```
 
@@ -64,11 +64,11 @@ Default function calls overload function with `defaultLiquidityFee`, which is ta
 +    uint256 liquidityFee
   ) internal virtual returns (uint256 amountA, uint256 amountB) {
     // create the pair if it doesn't exist yet
-+   if (IAstrocakeFactory(factory).getPair(tokenA, tokenB) == address(0)) {
--      IAstrocakeFactory(factory).createPair(tokenA, tokenB);
-+      IAstrocakeFactory(factory).createPair(tokenA, tokenB, msg.sender, liquidityFee);
++   if (IWeedSwapFactory(factory).getPair(tokenA, tokenB) == address(0)) {
+-      IWeedSwapFactory(factory).createPair(tokenA, tokenB);
++      IWeedSwapFactory(factory).createPair(tokenA, tokenB, msg.sender, liquidityFee);
     }
-    (uint256 reserveA, uint256 reserveB) = AstrocakeLibrary.getReserves(factory, tokenA, tokenB);
+    (uint256 reserveA, uint256 reserveB) = WeedSwapLibrary.getReserves(factory, tokenA, tokenB);
     if (reserveA == 0 && reserveB == 0) {
 ⏩
 ```
@@ -99,12 +99,12 @@ Provides the opportunity to create a pair with custom commission value, but it w
 +     uint256 liquidity
 +   )
 + {
-+   require(liquidityFee >= 0 && liquidityFee < 92, "AstrocakeRouter: INVALID_FEE_AMOUNT");
++   require(liquidityFee >= 0 && liquidityFee < 92, "WeedSwapRouter: INVALID_FEE_AMOUNT");
 +   (amountA, amountB) = _addLiquidityWithFee(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, liquidityFee);
-+   address pair = AstrocakeLibrary.pairFor(factory, tokenA, tokenB);
++   address pair = WeedSwapLibrary.pairFor(factory, tokenA, tokenB);
 +   TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
 +   TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-+   liquidity = IAstrocakePair(pair).mint(to);
++   liquidity = IWeedSwapPair(pair).mint(to);
 + }
 ```
 
@@ -133,7 +133,7 @@ Added to provide custom commission of the pair while creating a new one.
 +     uint256 liquidity
 +   )
 + {
-+   require(liquidityFee >= 0 && liquidityFee < 92, "AstrocakeRouter: INVALID_FEE_AMOUNT");
++   require(liquidityFee >= 0 && liquidityFee < 92, "WeedSwapRouter: INVALID_FEE_AMOUNT");
 +   (amountToken, amountETH) = _addLiquidityWithFee(
 +     token,
 +     WETH,
@@ -143,11 +143,11 @@ Added to provide custom commission of the pair while creating a new one.
 +     amountETHMin,
 +     liquidityFee
 +   );
-+   address pair = AstrocakeLibrary.pairFor(factory, token, WETH);
++   address pair = WeedSwapLibrary.pairFor(factory, token, WETH);
 +   TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
 +   IWETH(WETH).deposit{value: amountETH}();
 +   assert(IWETH(WETH).transfer(pair, amountETH));
-+   liquidity = IAstrocakePair(pair).mint(to);
++   liquidity = IWeedSwapPair(pair).mint(to);
 +   // refund dust eth, if any
 +   if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH);
 + }
@@ -165,10 +165,10 @@ Added to provide custom commission of the pair while creating a new one.
     address to,
     uint256 deadline
   ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
--   amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path);
+-   amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
-    require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
+    require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
     TransferHelper.safeTransferFrom(
       path[0],
 ⏩
@@ -186,10 +186,10 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     address to,
     uint256 deadline
   ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
--    amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path);
+-    amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-    require(amounts[0] <= amountInMax, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+    require(amounts[0] <= amountInMax, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
     TransferHelper.safeTransferFrom(
       path[0],
 ⏩
@@ -206,13 +206,13 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     address to,
     uint256 deadline
   ) external payable virtual override ensure(deadline) returns (uint256[] memory amounts) {
-    require(path[0] == WETH, "AstrocakeRouter: INVALID_PATH");
--   amounts = AstrocakeLibrary.getAmountsOut(factory, msg.value, path);
+    require(path[0] == WETH, "WeedSwapRouter: INVALID_PATH");
+-   amounts = WeedSwapLibrary.getAmountsOut(factory, msg.value, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsOut(factory, msg.value, path, totalFee);
-    require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsOut(factory, msg.value, path, totalFee);
+    require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
     IWETH(WETH).deposit{value: amounts[0]}();
-    assert(IWETH(WETH).transfer(AstrocakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
+    assert(IWETH(WETH).transfer(WeedSwapLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
 ⏩
 ```
 
@@ -228,11 +228,11 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     address to,
     uint256 deadline
   ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
-    require(path[path.length - 1] == WETH, "AstrocakeRouter: INVALID_PATH");
--   amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path);
+    require(path[path.length - 1] == WETH, "WeedSwapRouter: INVALID_PATH");
+-   amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-    require(amounts[0] <= amountInMax, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+    require(amounts[0] <= amountInMax, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
     TransferHelper.safeTransferFrom(
       path[0],
 ⏩
@@ -250,11 +250,11 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     address to,
     uint256 deadline
   ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
-    require(path[path.length - 1] == WETH, "AstrocakeRouter: INVALID_PATH");
--   amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path);
+    require(path[path.length - 1] == WETH, "WeedSwapRouter: INVALID_PATH");
+-   amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
-    require(amounts[amounts.length - 1] >= amountOutMin, "AstrocakeRouter: INSUFFICIENT_OUTPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
+    require(amounts[amounts.length - 1] >= amountOutMin, "WeedSwapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
     TransferHelper.safeTransferFrom(
       path[0],
 ⏩
@@ -271,13 +271,13 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     address to,
     uint256 deadline
   ) external payable virtual override ensure(deadline) returns (uint256[] memory amounts) {
-    require(path[0] == WETH, "AstrocakeRouter: INVALID_PATH");
--   amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path);
+    require(path[0] == WETH, "WeedSwapRouter: INVALID_PATH");
+-   amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path);
 +   uint256 totalFee = getTotalFee(path);
-+   amounts = AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
-    require(amounts[0] <= msg.value, "AstrocakeRouter: EXCESSIVE_INPUT_AMOUNT");
++   amounts = WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
+    require(amounts[0] <= msg.value, "WeedSwapRouter: EXCESSIVE_INPUT_AMOUNT");
     IWETH(WETH).deposit{value: amounts[0]}();
-    assert(IWETH(WETH).transfer(AstrocakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
+    assert(IWETH(WETH).transfer(WeedSwapLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
 ⏩
 ```
 
@@ -290,9 +290,9 @@ Updated to calculate the `amounts` taking into account the commission of the pai
     (uint256 reserveInput, uint256 reserveOutput) =
         input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
--   amountOutput = AstrocakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
+-   amountOutput = WeedSwapLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
 +   uint256 totalFee = getTotalFee(path);
-+   amountOutput = AstrocakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput, totalFee);
++   amountOutput = WeedSwapLibrary.getAmountOut(amountInput, reserveInput, reserveOutput, totalFee);
 ⏩
 ```
 
@@ -308,8 +308,8 @@ Updated to calculate the `amounts` taking into account the commission of the pai
 +   uint256 reserveOut,
 +   uint256 totalFee
   ) public pure virtual override returns (uint256 amountOut) {
--   return AstrocakeLibrary.getAmountOut(amountIn, reserveIn, reserveOut);
-+   return AstrocakeLibrary.getAmountOut(amountIn, reserveIn, reserveOut, totalFee);
+-   return WeedSwapLibrary.getAmountOut(amountIn, reserveIn, reserveOut);
++   return WeedSwapLibrary.getAmountOut(amountIn, reserveIn, reserveOut, totalFee);
   }
 ```
 
@@ -325,8 +325,8 @@ Updated to provide the ability to deduct the `amountOut` by taking into account 
 +   uint256 reserveOut,
 +   uint256 totalFee
   ) public pure virtual override returns (uint256 amountIn) {
--   return AstrocakeLibrary.getAmountIn(amountOut, reserveIn, reserveOut);
-+   return AstrocakeLibrary.getAmountIn(amountOut, reserveIn, reserveOut, totalFee);
+-   return WeedSwapLibrary.getAmountIn(amountOut, reserveIn, reserveOut);
++   return WeedSwapLibrary.getAmountIn(amountOut, reserveIn, reserveOut, totalFee);
   }
 ```
 
@@ -335,9 +335,9 @@ Updated to provide the ability to deduct the `amountIn` by taking into account t
 ## getAmountsOut
 
 ```diff
-- return AstrocakeLibrary.getAmountsOut(factory, amountIn, path);
+- return WeedSwapLibrary.getAmountsOut(factory, amountIn, path);
 + uint256 totalFee = getTotalFee(path);
-+ return AstrocakeLibrary.getAmountsOut(factory, amountIn, path, totalFee);
++ return WeedSwapLibrary.getAmountsOut(factory, amountIn, path, totalFee);
 ```
 
 Updated to provide the ability to deduct the `amounts` by taking into account the commission of the pair.
@@ -345,9 +345,9 @@ Updated to provide the ability to deduct the `amounts` by taking into account th
 ## getAmountsIn
 
 ```diff
-- return AstrocakeLibrary.getAmountsIn(factory, amountOut, path);
+- return WeedSwapLibrary.getAmountsIn(factory, amountOut, path);
 + uint256 totalFee = getTotalFee(path);
-+ return AstrocakeLibrary.getAmountsIn(factory, amountOut, path, totalFee);
++ return WeedSwapLibrary.getAmountsIn(factory, amountOut, path, totalFee);
 ```
 
 Updated to provide the ability to deduct the `amounts` by taking into account the commission of the pair.
@@ -356,7 +356,7 @@ Updated to provide the ability to deduct the `amounts` by taking into account th
 
 ```diff
 + function getTotalFee(address[] memory path) internal view returns(uint256) {
-+   return IAstrocakePair(AstrocakeLibrary.pairFor(factory, path[0], path[1])).getTotalFee();
++   return IWeedSwapPair(WeedSwapLibrary.pairFor(factory, path[0], path[1])).getTotalFee();
 + }
 ```
 
